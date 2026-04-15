@@ -1,0 +1,1078 @@
+<!DOCTYPE html>
+<html lang="ko">
+<head>
+<meta charset="UTF-8">
+<meta name="viewport" content="width=device-width, initial-scale=1.0, maximum-scale=1.0, user-scalable=no">
+<title>ZEN</title>
+<link href="https://fonts.googleapis.com/css2?family=Noto+Serif+KR:wght@400;700;900&family=Noto+Sans+KR:wght@300;400;700&family=Press+Start+2P&family=Ma+Shan+Zheng&family=Noto+Sans+Devanagari:wght@400;700&family=Crimson+Pro:wght@400;700;900&family=Orbitron:wght@400;700;900&display=swap" rel="stylesheet">
+<style>
+:root {
+  --red-main: #8B0000;
+  --red-bright: #DC143C;
+  --red-neon: #FF1744;
+  --red-deep: #4A0000;
+  --green-neon: #39FF14;
+  --green-dark: #00C853;
+  --black-main: #0A0A0A;
+  --black-soft: #1A1A1A;
+  --white-cream: #F5E6D3;
+  --gold-accent: #FFD700;
+  --gold-dim: #B8860B;
+  --font-serif: 'Noto Serif KR', 'Crimson Pro', 'Ma Shan Zheng', serif;
+  --font-sans: 'Noto Sans KR', sans-serif;
+  --font-pixel: 'Press Start 2P', monospace;
+  --font-cyber: 'Orbitron', sans-serif;
+  --font-devanagari: 'Noto Sans Devanagari', sans-serif;
+  --font-cn: 'Ma Shan Zheng', serif;
+}
+*{margin:0;padding:0;box-sizing:border-box;}
+html,body{width:100%;height:100%;overflow:hidden;background:var(--black-main);font-family:var(--font-sans);-webkit-tap-highlight-color:transparent;user-select:none;}
+
+/* Noise overlay */
+body::after{content:'';position:fixed;top:0;left:0;right:0;bottom:0;background-image:url("data:image/svg+xml,%3Csvg viewBox='0 0 256 256' xmlns='http://www.w3.org/2000/svg'%3E%3Cfilter id='n'%3E%3CfeTurbulence type='fractalNoise' baseFrequency='0.85' numOctaves='4' stitchTiles='stitch'/%3E%3C/filter%3E%3Crect width='100%25' height='100%25' filter='url(%23n)' opacity='0.04'/%3E%3C/svg%3E");pointer-events:none;z-index:9999;}
+
+.screen{position:fixed;top:0;left:0;width:100%;height:100%;display:none;overflow:hidden;}
+.screen.active{display:flex;flex-direction:column;}
+
+/* Oriental cross pattern - enhanced */
+.oriental-bg{
+  background-image:
+    url("data:image/svg+xml,%3Csvg width='60' height='60' viewBox='0 0 60 60' xmlns='http://www.w3.org/2000/svg'%3E%3Cg fill='none'%3E%3Cg fill='%238B0000' fill-opacity='0.06'%3E%3Cpath d='M36 34v-4h-2v4h-4v2h4v4h2v-4h4v-2h-4zm0-30V0h-2v4h-4v2h4v4h2V6h4V4h-4zM6 34v-4H4v4H0v2h4v4h2v-4h4v-2H6zM6 4V0H4v4H0v2h4v4h2V6h4V4H6z'/%3E%3C/g%3E%3C/g%3E%3C/svg%3E"),
+    radial-gradient(ellipse at 20% 80%, rgba(139,0,0,0.08), transparent 50%),
+    radial-gradient(ellipse at 80% 20%, rgba(57,255,20,0.03), transparent 50%),
+    radial-gradient(ellipse at 50% 50%, rgba(74,0,0,0.15), transparent 70%);
+  background-color: var(--black-main);
+}
+
+/* Scanlines */
+.scanlines::after{content:'';position:absolute;top:0;left:0;right:0;bottom:0;background:repeating-linear-gradient(0deg,transparent,transparent 1px,rgba(0,0,0,0.12) 1px,rgba(0,0,0,0.12) 2px);pointer-events:none;z-index:10;}
+
+/* ====== TEXT BOX (Visual Novel) - ENHANCED ====== */
+.text-box{
+  position:absolute;bottom:6%;left:4%;right:4%;
+  background:linear-gradient(135deg,rgba(10,10,10,0.95),rgba(74,0,0,0.85));
+  border:1px solid rgba(220,20,60,0.5);
+  border-radius:2px;
+  padding:18px 22px;
+  z-index:20;
+  cursor:pointer;
+  min-height:100px;
+  /* Decorative corners via pseudo-elements on inner wrapper */
+  box-shadow:
+    0 0 20px rgba(220,20,60,0.2),
+    0 0 60px rgba(220,20,60,0.05),
+    inset 0 0 40px rgba(0,0,0,0.6),
+    inset 0 1px 0 rgba(220,20,60,0.15);
+}
+.text-box::before{
+  content:'';position:absolute;top:-1px;left:20px;width:60px;height:1px;
+  background:linear-gradient(90deg,transparent,var(--gold-accent),transparent);
+  opacity:0.5;
+}
+.text-box::after{
+  content:'';position:absolute;bottom:-1px;right:20px;width:60px;height:1px;
+  background:linear-gradient(90deg,transparent,var(--green-neon),transparent);
+  opacity:0.3;
+}
+.text-box .speaker{
+  font-family:var(--font-serif);color:var(--red-neon);font-size:13px;font-weight:700;
+  margin-bottom:8px;letter-spacing:3px;
+  text-shadow:0 0 10px rgba(255,23,68,0.5);
+  padding-left:2px;
+  border-left:2px solid var(--gold-accent);
+  padding-left:10px;
+}
+.text-box .dialogue{font-family:var(--font-sans);color:var(--white-cream);font-size:14.5px;line-height:1.8;letter-spacing:0.3px;}
+.text-box .tap-ind{position:absolute;bottom:8px;right:14px;color:var(--green-neon);font-size:9px;animation:blink 1s infinite;text-shadow:0 0 6px var(--green-neon);}
+
+/* Text box decorative corners */
+.text-box-corner{position:absolute;width:14px;height:14px;z-index:21;pointer-events:none;}
+.text-box-corner.tl{top:4px;left:4px;border-top:1px solid var(--gold-accent);border-left:1px solid var(--gold-accent);opacity:0.5;}
+.text-box-corner.tr{top:4px;right:4px;border-top:1px solid var(--gold-accent);border-right:1px solid var(--gold-accent);opacity:0.5;}
+.text-box-corner.bl{bottom:4px;left:4px;border-bottom:1px solid var(--gold-accent);border-left:1px solid var(--gold-accent);opacity:0.5;}
+.text-box-corner.br{bottom:4px;right:4px;border-bottom:1px solid var(--gold-accent);border-right:1px solid var(--gold-accent);opacity:0.5;}
+
+/* ====== PAUSE ====== */
+#pause-overlay{display:none;position:fixed;top:0;left:0;right:0;bottom:0;background:rgba(0,0,0,0.85);backdrop-filter:blur(4px);-webkit-backdrop-filter:blur(4px);z-index:1000;justify-content:center;align-items:center;flex-direction:column;gap:16px;}
+#pause-overlay.active{display:flex;}
+.pause-btn{
+  font-family:var(--font-serif);color:var(--white-cream);
+  background:linear-gradient(135deg,rgba(74,0,0,0.9),rgba(139,0,0,0.7));
+  border:1px solid rgba(220,20,60,0.4);
+  padding:14px 40px;font-size:15px;cursor:pointer;letter-spacing:4px;
+  transition:all .3s;
+  position:relative;
+  min-width:220px;text-align:center;
+}
+.pause-btn::before{content:'';position:absolute;top:0;left:0;width:100%;height:100%;background:linear-gradient(135deg,transparent 40%,rgba(57,255,20,0.03) 50%,transparent 60%);pointer-events:none;}
+.pause-btn:active{background:linear-gradient(135deg,var(--red-main),var(--red-bright));box-shadow:0 0 20px rgba(220,20,60,0.5);}
+.pause-icon{
+  position:absolute;top:16px;left:16px;
+  color:var(--white-cream);font-size:18px;cursor:pointer;z-index:50;
+  opacity:0.5;text-shadow:0 0 5px var(--green-neon);
+  font-family:var(--font-cyber);
+  width:36px;height:36px;
+  display:flex;justify-content:center;align-items:center;
+  background:rgba(10,10,10,0.5);
+  border:1px solid rgba(139,0,0,0.3);
+  border-radius:2px;
+  transition:opacity .3s;
+}
+.pause-icon:active{opacity:1;}
+
+/* ====== KEYFRAMES ====== */
+@keyframes blink{0%,100%{opacity:1;}50%{opacity:.3;}}
+@keyframes dropBall{0%{top:-60px;opacity:0;}60%{opacity:1;}100%{top:80%;opacity:1;}}
+@keyframes rippleRed{
+  0%{transform:translate(-50%,-50%) scale(0);opacity:.9;}
+  100%{transform:translate(-50%,-50%) scale(6);opacity:0;}
+}
+@keyframes lotusBloom{0%{transform:scale(0) rotate(-30deg);opacity:0;}50%{transform:scale(.8) rotate(10deg);opacity:.8;}100%{transform:scale(1) rotate(0deg);opacity:1;}}
+@keyframes neonPulse{0%,100%{opacity:.4;text-shadow:0 0 5px var(--green-neon);}50%{opacity:1;text-shadow:0 0 20px var(--green-neon),0 0 40px var(--green-neon);}}
+@keyframes glitch{0%{transform:translate(0);}20%{transform:translate(-3px,2px);}40%{transform:translate(3px,-2px);}60%{transform:translate(-2px,-1px);}80%{transform:translate(2px,1px);}100%{transform:translate(0);}}
+@keyframes glitchColor{0%{text-shadow:2px 0 #f00,-2px 0 #0f0;}50%{text-shadow:-2px 0 #f00,2px 0 #00f;}100%{text-shadow:2px 0 #f00,-2px 0 #0f0;}}
+@keyframes marbling{0%{background-position:0% 50%;}50%{background-position:100% 50%;}100%{background-position:0% 50%;}}
+@keyframes slideFromRight{0%{transform:translateX(100vw);opacity:0;}100%{transform:translateX(-50%);opacity:1;}}
+@keyframes slideFromLeft{0%{transform:translateX(-100vw);opacity:0;}100%{transform:translateX(0);opacity:1;}}
+@keyframes chakraBloom{0%{transform:scale(0) rotate(0deg);opacity:0;}100%{transform:scale(1) rotate(180deg);opacity:.6;}}
+@keyframes calendarDrop{0%{transform:translateY(0) rotateX(0deg);opacity:1;}100%{transform:translateY(120%) rotateX(-90deg);opacity:0;}}
+@keyframes fadeInUp{0%{opacity:0;transform:translateY(30px);}100%{opacity:1;transform:translateY(0);}}
+@keyframes shatter{0%{transform:scale(1);opacity:1;}50%{transform:scale(1.05);}100%{transform:scale(0) rotate(45deg);opacity:0;}}
+@keyframes petalFloat{0%{transform:translate(0,0) rotate(0deg);opacity:1;}100%{transform:translate(var(--tx),var(--ty)) rotate(var(--rot));opacity:0;}}
+@keyframes spin{to{transform:rotate(360deg);}}
+@keyframes specialGlitch {
+  0%, 33% { opacity: 0; }
+  33.1%, 36% { opacity: 1; }
+  36.1%, 56% { opacity: 0; }
+  56.1%, 66% { opacity: 1; }
+  66.1%, 70% { opacity: 0; }
+  70.1%, 100% { opacity: 1; }
+}
+@keyframes charGlow{0%{filter:drop-shadow(0 0 15px rgba(220,20,60,.2)) drop-shadow(0 0 5px rgba(57,255,20,.1));}100%{filter:drop-shadow(0 0 25px rgba(220,20,60,.4)) drop-shadow(0 0 10px rgba(57,255,20,.2));}}
+@keyframes glitchLineMove{0%{transform:translateY(-100vh);}100%{transform:translateY(100vh);}}
+@keyframes musicBarAnim{0%{height:4px;}100%{height:20px;}}
+@keyframes floatParticle{0%{opacity:0;transform:translateY(0);}10%{opacity:1;}90%{opacity:1;}100%{opacity:0;transform:translateY(-100vh);}}
+@keyframes fadeInCenter{0%{opacity:0;transform:translate(-50%,-50%) scale(0.9);}100%{opacity:1;transform:translate(-50%,-50%) scale(1);}}
+@keyframes borderGlow{
+  0%,100%{border-color:rgba(220,20,60,0.3);box-shadow:0 0 10px rgba(220,20,60,0.1);}
+  50%{border-color:rgba(220,20,60,0.6);box-shadow:0 0 20px rgba(220,20,60,0.2),0 0 40px rgba(220,20,60,0.05);}
+}
+@keyframes subtlePulse{0%,100%{opacity:0.6;}50%{opacity:1;}}
+
+/* ====== [1] MAIN SCREEN - REDESIGNED ====== */
+#main-screen{
+  background:radial-gradient(ellipse at center 20%,rgba(74,0,0,0.4) 0%,transparent 50%),
+             radial-gradient(ellipse at center bottom,#1a0000 0%,#0a0a0a 60%,#000 100%);
+  justify-content:center;align-items:center;position:relative;
+}
+/* Water surface at bottom */
+#main-screen .water-surface{
+  position:absolute;bottom:0;left:0;right:0;height:25%;
+  background:linear-gradient(180deg,transparent 0%,rgba(139,0,0,.05) 30%,rgba(139,0,0,.08) 60%,rgba(74,0,0,.12) 100%);
+  overflow:hidden;
+}
+/* Ripple ring for red ripples */
+.ripple-ring{
+  position:absolute;border-radius:50%;
+  border:1px solid rgba(220,20,60,.4);
+  pointer-events:none;
+}
+/* Drop circle */
+#drop-circle{
+  width:36px;height:36px;border-radius:50%;
+  background:radial-gradient(circle,var(--red-neon),var(--red-deep));
+  position:absolute;left:50%;transform:translateX(-50%);top:-60px;
+  box-shadow:0 0 20px var(--red-neon),0 0 40px rgba(220,20,60,.3),0 0 60px rgba(220,20,60,.1);
+  z-index:5;
+}
+/* Lotus container - TRUE CENTER */
+#lotus-container{
+  position:absolute;
+  top:50%;left:50%;
+  transform:translate(-50%,-50%);
+  z-index:10;
+  display:flex;flex-direction:column;align-items:center;justify-content:center;
+  opacity:0;
+}
+/* Lotus - outline only redesign */
+.lotus{width:100px;height:55px;position:relative;margin:0 auto 16px;}
+.lotus-petal{
+  position:absolute;width:24px;height:42px;
+  border-radius:50% 50% 50% 50%/60% 60% 40% 40%;
+  bottom:0;left:50%;transform-origin:bottom center;
+  background:transparent !important;
+  border:1px solid;
+}
+.lotus-petal:nth-child(1){border-color:rgba(220,20,60,0.7);transform:translateX(-50%) rotate(-40deg);}
+.lotus-petal:nth-child(2){border-color:rgba(255,23,68,0.6);transform:translateX(-50%) rotate(-20deg);}
+.lotus-petal:nth-child(3){border-color:rgba(255,23,68,0.8);transform:translateX(-50%) rotate(0deg);}
+.lotus-petal:nth-child(4){border-color:rgba(255,23,68,0.6);transform:translateX(-50%) rotate(20deg);}
+.lotus-petal:nth-child(5){border-color:rgba(220,20,60,0.7);transform:translateX(-50%) rotate(40deg);}
+.lotus-petal:nth-child(6){border-color:rgba(139,0,0,0.5);transform:translateX(-50%) rotate(-30deg);width:20px;height:34px;}
+.lotus-petal:nth-child(7){border-color:rgba(139,0,0,0.5);transform:translateX(-50%) rotate(30deg);width:20px;height:34px;}
+
+#start-btn{
+  font-family:var(--font-serif);font-size:16px;color:var(--white-cream);
+  background:transparent;
+  border:1px solid rgba(220,20,60,0.5);
+  padding:12px 48px;cursor:pointer;letter-spacing:10px;
+  position:relative;overflow:hidden;transition:all .4s;
+  margin-top:8px;
+}
+#start-btn::before{content:'';position:absolute;top:0;left:-100%;width:100%;height:100%;background:linear-gradient(90deg,transparent,rgba(220,20,60,.2),transparent);transition:left .6s;}
+#start-btn:active::before{left:100%;}
+#start-btn:active{background:rgba(139,0,0,.3);box-shadow:0 0 25px rgba(220,20,60,.4);}
+
+/* ====== KARMA DISPLAY - ENHANCED ====== */
+.karma-display{
+  width:260px;height:140px;
+  border:1px solid rgba(220,20,60,0.5);
+  background:linear-gradient(135deg,rgba(10,10,10,0.97),rgba(26,0,0,0.95));
+  position:relative;display:flex;flex-direction:column;justify-content:center;align-items:center;
+  box-shadow:0 0 30px rgba(220,20,60,.2),0 0 60px rgba(220,20,60,.05),inset 0 0 30px rgba(0,0,0,.8);
+  overflow:hidden;
+  animation:borderGlow 3s ease-in-out infinite;
+}
+.karma-display::before{content:'';position:absolute;top:0;left:0;right:0;bottom:0;background:linear-gradient(180deg,rgba(220,20,60,0.03) 0%,transparent 30%,transparent 70%,rgba(57,255,20,0.02) 100%);pointer-events:none;}
+.karma-corner{position:absolute;width:18px;height:18px;border-color:var(--gold-accent);opacity:.4;}
+.karma-corner.tl{top:6px;left:6px;border-top:1px solid;border-left:1px solid;}
+.karma-corner.tr{top:6px;right:6px;border-top:1px solid;border-right:1px solid;}
+.karma-corner.bl{bottom:6px;left:6px;border-bottom:1px solid;border-left:1px solid;}
+.karma-corner.br{bottom:6px;right:6px;border-bottom:1px solid;border-right:1px solid;}
+.karma-label{font-family:var(--font-cyber);font-size:12px;color:var(--green-neon);letter-spacing:8px;animation:neonPulse 2s ease-in-out infinite;}
+.karma-value{font-family:var(--font-cyber);font-size:34px;color:var(--red-neon);text-shadow:0 0 10px var(--red-neon),0 0 30px rgba(255,23,68,.4);margin-top:8px;}
+.karma-unit{font-family:var(--font-serif);font-size:15px;color:var(--white-cream);opacity:.6;margin-left:4px;}
+
+/* ====== CHARACTER STANDING - FIX IMAGE CLIPPING ====== */
+.character-standing{
+  position:absolute;right:0;top:0;height:100%;width:55%;
+  object-fit:contain;
+  object-position:right bottom;
+  z-index:5;transition:opacity 1s ease;
+}
+/* Story BG - contain, no clipping */
+.story-bg{
+  position:absolute;top:0;left:0;right:0;bottom:0;
+  background-size:cover;background-position:center;
+  z-index:1;transition:all 1s ease;
+}
+
+/* Flicker/Glitch overlay */
+.flicker-overlay {
+  position:absolute;top:0;left:0;width:100%;height:100%;
+  z-index:10;pointer-events:none;opacity:0;
+  animation:specialGlitch 6s forwards;
+}
+.glitch-filter {
+  filter:saturate(0.3) hue-rotate(-10deg) contrast(2.0) brightness(0.9) sepia(0.1);
+}
+
+/* Day14 marbling */
+.marbling-bg{background:radial-gradient(ellipse at 30% 50%,rgba(139,0,0,.6),transparent 50%),radial-gradient(ellipse at 70% 30%,rgba(255,255,255,.15),transparent 40%),radial-gradient(ellipse at 50% 80%,rgba(139,0,0,.4),transparent 50%),linear-gradient(135deg,#0a0000,#1a0000,#0a0a0a,#200000);background-size:200% 200%;animation:marbling 8s ease-in-out infinite;}
+
+/* Top text box - enhanced */
+.top-text-box{
+  position:absolute;top:5%;left:8%;right:8%;
+  background:rgba(10,10,10,0.75);
+  backdrop-filter:blur(12px);-webkit-backdrop-filter:blur(12px);
+  border:1px solid rgba(220,20,60,0.2);
+  padding:18px 24px;z-index:20;cursor:pointer;
+  box-shadow:0 0 30px rgba(0,0,0,0.4);
+}
+.top-text-box::before{content:'';position:absolute;top:-1px;left:30%;right:30%;height:1px;background:linear-gradient(90deg,transparent,rgba(220,20,60,0.4),transparent);}
+.top-text-box .dialogue{font-family:var(--font-sans);color:var(--white-cream);font-size:14px;line-height:1.8;text-align:center;letter-spacing:0.5px;}
+
+/* Calendar - enhanced */
+.calendar-overlay{position:fixed;top:0;left:0;right:0;bottom:0;background:rgba(0,0,0,.95);z-index:200;display:flex;justify-content:center;align-items:center;flex-direction:column;}
+.calendar-page{
+  width:200px;height:240px;
+  background:linear-gradient(180deg,#f5e6d3,#e8d5c0);
+  border:2px solid #8B0000;
+  display:flex;justify-content:center;align-items:center;
+  font-family:var(--font-cn);font-size:48px;color:var(--red-deep);
+  position:relative;
+  box-shadow:0 4px 30px rgba(139,0,0,.3),0 0 60px rgba(0,0,0,.5),inset 0 0 30px rgba(139,0,0,.08);
+  text-align:center;line-height:1.2;padding:20px;
+}
+.calendar-page::before{content:'';position:absolute;top:10px;left:10px;right:10px;height:1px;background:linear-gradient(90deg,transparent,var(--red-main),transparent);}
+.calendar-page::after{content:'';position:absolute;bottom:10px;left:10px;right:10px;height:1px;background:linear-gradient(90deg,transparent,var(--red-main),transparent);opacity:0.5;}
+
+/* ====== CHOICE SCREEN - ENHANCED ====== */
+#choice-screen{
+  background:
+    radial-gradient(ellipse at 50% 30%,rgba(74,0,0,0.4),transparent 60%),
+    radial-gradient(ellipse at 20% 80%,rgba(139,0,0,0.15),transparent 40%),
+    radial-gradient(ellipse at 80% 80%,rgba(57,255,20,0.03),transparent 30%),
+    var(--black-main);
+  justify-content:center;align-items:center;gap:40px;
+}
+.choice-title{
+  font-family:var(--font-serif);font-size:19px;color:var(--red-bright);
+  letter-spacing:5px;
+  text-shadow:0 0 20px rgba(220,20,60,.4);
+  animation:subtlePulse 3s ease-in-out infinite;
+  text-align:center;padding:0 20px;line-height:1.8;
+}
+.choice-btn{
+  font-family:var(--font-serif);font-size:17px;color:var(--white-cream);
+  background:linear-gradient(135deg,rgba(74,0,0,0.8),rgba(139,0,0,0.4));
+  border:1px solid rgba(220,20,60,0.4);
+  padding:16px 52px;cursor:pointer;letter-spacing:5px;
+  position:relative;overflow:hidden;transition:all .3s;
+  box-shadow:0 0 15px rgba(220,20,60,.15);
+}
+.choice-btn::before{content:'蓮';position:absolute;left:14px;top:50%;transform:translateY(-50%);font-size:13px;opacity:.2;color:var(--gold-accent);}
+.choice-btn::after{content:'蓮';position:absolute;right:14px;top:50%;transform:translateY(-50%) scaleX(-1);font-size:13px;opacity:.2;color:var(--gold-accent);}
+.choice-btn:active{box-shadow:0 0 30px rgba(220,20,60,.4),0 0 5px var(--green-neon);transform:scale(1.02);}
+
+/* ====== [3] QUIZ - ENHANCED ====== */
+#quiz-screen{
+  background:
+    radial-gradient(circle at 20% 30%,rgba(139,0,0,.15),transparent 40%),
+    radial-gradient(circle at 80% 70%,rgba(57,255,20,.03),transparent 30%),
+    radial-gradient(circle at 50% 50%,rgba(74,0,0,0.2),transparent 60%),
+    var(--black-main);
+  justify-content:center;align-items:center;padding:20px;
+}
+.quiz-progress{position:absolute;top:20px;left:20px;right:20px;height:2px;background:rgba(255,255,255,.08);z-index:30;border-radius:2px;}
+.quiz-progress-fill{height:100%;background:linear-gradient(90deg,var(--red-neon),var(--green-neon));transition:width .5s ease;box-shadow:0 0 8px var(--red-neon);border-radius:2px;}
+.quiz-qnum{font-family:var(--font-cyber);font-size:10px;color:var(--green-neon);letter-spacing:5px;margin-bottom:24px;text-shadow:0 0 10px var(--green-neon);opacity:0.7;}
+.quiz-question{font-family:var(--font-serif);font-size:18px;color:var(--white-cream);text-align:center;margin-bottom:32px;line-height:1.8;padding:0 10px;letter-spacing:1px;}
+.quiz-options{display:flex;flex-direction:column;gap:12px;width:100%;max-width:360px;}
+.quiz-option{
+  font-family:var(--font-sans);font-size:14px;color:var(--white-cream);
+  background:linear-gradient(135deg,rgba(20,5,5,.95),rgba(10,10,10,.97));
+  border:1px solid rgba(139,0,0,.35);
+  padding:16px 20px;cursor:pointer;text-align:left;line-height:1.6;
+  transition:all .3s;position:relative;overflow:hidden;
+  letter-spacing:0.3px;
+}
+.quiz-option::before{content:'';position:absolute;top:0;left:0;width:2px;height:100%;background:var(--red-neon);opacity:0;transition:opacity .3s;}
+.quiz-option::after{content:'';position:absolute;top:0;right:0;width:0;height:100%;background:linear-gradient(270deg,rgba(220,20,60,0.05),transparent);transition:width .3s;}
+.quiz-option:active::before{opacity:1;}
+.quiz-option:active::after{width:100%;}
+.quiz-option:active{border-color:rgba(220,20,60,0.6);transform:translateX(3px);}
+.quiz-option.glitch-out{animation:glitch .1s infinite,glitchColor .15s infinite;}
+.quiz-option.vanished{opacity:0;transform:scaleY(0);pointer-events:none;height:0;padding:0;margin:0;border:0;overflow:hidden;transition:all .5s;}
+.petal-particle{position:fixed;width:12px;height:12px;background:var(--red-bright);border-radius:50% 0 50% 0;pointer-events:none;z-index:500;animation:petalFloat 1.2s ease-out forwards;}
+
+/* ====== [4] GACHA - ENHANCED ====== */
+#gacha-screen{
+  background:radial-gradient(circle at 50% 50%,rgba(74,0,0,0.3),var(--black-main) 70%);
+  justify-content:center;align-items:center;overflow:hidden;
+}
+.gacha-name{
+  font-family:var(--font-serif);font-size:36px;color:var(--white-cream);
+  letter-spacing:10px;
+  text-shadow:0 0 20px var(--red-neon),0 0 40px rgba(220,20,60,.4),0 0 80px rgba(220,20,60,.15);
+  z-index:20;position:absolute;white-space:nowrap;
+}
+.gacha-standing{position:absolute;height:80%;bottom:0;z-index:15;object-fit:contain;max-width:90%;}
+.chakra-pattern{
+  position:absolute;width:250px;height:250px;border-radius:50%;
+  border:1px solid rgba(220,20,60,.2);opacity:0;z-index:5;
+  background:radial-gradient(circle,transparent 40%,rgba(220,20,60,.04) 60%,transparent 70%),
+    conic-gradient(from 0deg,transparent,rgba(57,255,20,.06),transparent,rgba(220,20,60,.06),transparent);
+}
+
+/* Gacha green scan lines */
+.gacha-scanline{
+  position:absolute;width:100%;height:2px;
+  background:linear-gradient(90deg,transparent 0%,rgba(57,255,20,0.4) 30%,rgba(57,255,20,0.7) 50%,rgba(57,255,20,0.4) 70%,transparent 100%);
+  box-shadow:0 0 8px rgba(57,255,20,0.3),0 0 20px rgba(57,255,20,0.1);
+  opacity:0;z-index:4;pointer-events:none;
+  animation:gachaScanMove var(--spd) linear var(--del) forwards;
+}
+@keyframes gachaScanMove{
+  0%{opacity:0;transform:translateY(0);}
+  5%{opacity:1;}
+  80%{opacity:0.6;}
+  100%{opacity:0;transform:translateY(var(--dist));}
+}
+/* Vertical green accent lines */
+.gacha-vline{
+  position:absolute;width:1px;height:0;
+  background:linear-gradient(180deg,transparent,rgba(57,255,20,0.5),transparent);
+  z-index:4;pointer-events:none;
+  animation:gachaVLine var(--spd) ease-out var(--del) forwards;
+}
+@keyframes gachaVLine{
+  0%{height:0;opacity:0;}
+  20%{opacity:0.7;}
+  60%{height:var(--h);opacity:0.4;}
+  100%{height:var(--h);opacity:0;}
+}
+
+/* ====== LIBRARY - ENHANCED ====== */
+#library-screen{
+  flex-direction:column;overflow-y:auto;padding-bottom:40px;
+}
+.music-bar{
+  width:100%;padding:12px 20px;
+  background:linear-gradient(180deg,rgba(10,10,10,.97),rgba(20,5,5,.95));
+  border-bottom:1px solid rgba(139,0,0,.25);
+  display:flex;align-items:center;gap:12px;z-index:50;position:sticky;top:0;
+  box-shadow:0 4px 20px rgba(0,0,0,0.5);
+}
+.music-toggle{
+  width:34px;height:34px;border-radius:50%;
+  background:linear-gradient(135deg,var(--red-deep),var(--red-main));
+  border:1px solid rgba(220,20,60,0.4);
+  display:flex;justify-content:center;align-items:center;
+  cursor:pointer;font-size:13px;color:var(--white-cream);flex-shrink:0;
+  transition:all .3s;
+}
+.music-toggle:active{box-shadow:0 0 15px rgba(220,20,60,0.4);}
+.music-bars-visual{display:flex;gap:2px;align-items:end;height:20px;}
+.music-bar-line{width:3px;background:var(--green-neon);animation:musicBarAnim var(--spd) ease-in-out infinite alternate;box-shadow:0 0 3px var(--green-neon);}
+.music-title{font-family:var(--font-pixel);font-size:8px;color:var(--green-neon);letter-spacing:1px;opacity:.6;text-shadow:0 0 5px var(--green-neon);}
+.library-title{font-family:var(--font-cn);font-size:30px;color:var(--white-cream);letter-spacing:10px;text-align:center;margin:32px 0 6px;text-shadow:0 0 15px rgba(220,20,60,.4);}
+.library-sub{font-family:var(--font-pixel);font-size:8px;color:var(--green-neon);text-align:center;letter-spacing:3px;margin-bottom:32px;text-shadow:0 0 5px var(--green-neon);opacity:0.6;}
+
+/* Library decorative line */
+.library-divider{
+  width:120px;height:1px;margin:0 auto 28px;
+  background:linear-gradient(90deg,transparent,rgba(220,20,60,0.4),var(--gold-accent),rgba(220,20,60,0.4),transparent);
+  opacity:0.5;
+}
+
+.token-grid{display:grid;grid-template-columns:repeat(3,1fr);gap:20px;padding:0 24px;max-width:420px;margin:0 auto;}
+.token-cell{display:flex;flex-direction:column;align-items:center;gap:8px;cursor:pointer;transition:transform .3s;}
+.token-cell:active{transform:scale(.95);}
+.token-circle{
+  width:85px;height:85px;border-radius:50%;
+  border:1px solid rgba(220,20,60,0.4);
+  background:linear-gradient(135deg,#1a0505,#200808);
+  overflow:hidden;display:flex;justify-content:center;align-items:center;
+  box-shadow:0 0 15px rgba(220,20,60,.15),inset 0 0 15px rgba(0,0,0,.5);
+  position:relative;
+  transition:box-shadow .3s;
+}
+.token-cell:active .token-circle{box-shadow:0 0 20px rgba(220,20,60,.3),0 0 5px var(--green-neon);}
+.token-circle::after{content:'';position:absolute;top:-50%;left:-50%;width:200%;height:200%;background:conic-gradient(from 0deg,transparent 0%,rgba(57,255,20,.06) 25%,transparent 50%);animation:spin 5s linear infinite;}
+.token-circle img{width:100%;height:100%;object-fit:cover;position:relative;z-index:2;}
+.token-placeholder{font-size:26px;color:var(--red-neon);z-index:2;text-shadow:0 0 10px var(--red-neon);font-family:var(--font-cn);}
+.token-name{font-family:var(--font-pixel);font-size:7px;color:var(--green-neon);text-align:center;letter-spacing:1px;text-shadow:0 0 5px var(--green-neon);line-height:1.4;opacity:0.8;}
+.token-name-sub{font-family:var(--font-devanagari),var(--font-sans);font-size:10px;color:var(--white-cream);opacity:.5;text-align:center;}
+
+/* ====== CHARACTER DETAIL - ADJUSTED WIDTH ====== */
+#char-detail-screen{background:var(--black-main);flex-direction:row;overflow-y:auto;}
+.char-close{
+  position:fixed;top:16px;right:16px;width:38px;height:38px;
+  display:flex;justify-content:center;align-items:center;
+  font-family:var(--font-cyber);font-size:16px;color:var(--white-cream);
+  cursor:pointer;z-index:100;
+  background:rgba(10,10,10,.8);border:1px solid rgba(139,0,0,.4);
+  transition:all .3s;
+}
+.char-close:active{border-color:var(--red-bright);box-shadow:0 0 10px rgba(220,20,60,0.3);}
+
+/* Standing area takes 58% on desktop */
+.char-standing-area{
+  position:fixed;left:0;top:0;bottom:0;width:58%;z-index:5;
+  display:flex;align-items:flex-end;justify-content:center;overflow:visible;
+  background:radial-gradient(ellipse at 50% 80%,rgba(74,0,0,0.15),transparent 60%);
+}
+.char-standing-area img{
+  height:92%;max-width:95%;
+  object-fit:contain;
+  animation:charGlow 3s ease-in-out infinite alternate;
+}
+.char-glitch-lines{position:fixed;left:0;top:0;width:58%;height:100%;z-index:3;overflow:hidden;pointer-events:none;}
+.glitch-line{position:absolute;width:100%;height:2px;background:linear-gradient(90deg,transparent,var(--green-neon),transparent);opacity:.15;animation:glitchLineMove var(--spd) linear infinite;}
+
+/* Info area takes 42% on desktop */
+.char-info-area{
+  margin-left:58%;width:42%;
+  padding:60px 18px 40px;
+  display:flex;flex-direction:column;gap:14px;
+  z-index:10;min-height:100vh;
+}
+.char-info-box{
+  background:linear-gradient(135deg,rgba(10,10,10,.97),rgba(26,5,5,.92));
+  border:1px solid rgba(139,0,0,.3);
+  padding:16px 18px;position:relative;
+  box-shadow:0 0 20px rgba(0,0,0,0.3);
+}
+.char-info-box::before{content:'';position:absolute;top:0;left:0;width:24px;height:1px;background:var(--green-neon);opacity:0.5;}
+.char-info-box::after{content:'';position:absolute;top:0;left:0;width:1px;height:24px;background:var(--green-neon);opacity:0.5;}
+.char-info-box h3{
+  font-family:var(--font-serif);font-size:20px;color:var(--red-neon);
+  margin-bottom:14px;letter-spacing:4px;
+  text-shadow:0 0 12px rgba(255,23,68,.3);
+}
+.info-label{
+  font-family:var(--font-pixel);font-size:8px;color:var(--green-neon);
+  letter-spacing:3px;margin-bottom:4px;opacity:0.7;
+}
+.info-value{font-family:var(--font-sans);font-size:14px;color:var(--white-cream);line-height:1.7;margin-bottom:12px;letter-spacing:0.3px;}
+.region-thumb{
+  width:100%;height:120px;object-fit:cover;
+  border:1px solid rgba(139,0,0,.3);cursor:pointer;margin-top:8px;
+  transition:border-color .3s;
+}
+.region-thumb:active{border-color:var(--red-bright);}
+
+#fullscreen-overlay{display:none;position:fixed;top:0;left:0;right:0;bottom:0;background:rgba(0,0,0,.95);z-index:2000;justify-content:center;align-items:center;cursor:pointer;}
+#fullscreen-overlay.active{display:flex;}
+#fullscreen-overlay img{max-width:95%;max-height:95%;object-fit:contain;}
+
+/* Floating ambient particles */
+.ambient-particle{position:fixed;width:2px;height:2px;background:var(--red-neon);border-radius:50%;pointer-events:none;z-index:1;opacity:0;animation:floatParticle var(--dur) linear infinite;animation-delay:var(--del);}
+
+/* ====== MOBILE RESPONSIVE - FIXED ====== */
+@media(max-width:480px){
+  #char-detail-screen{flex-direction:column;}
+  .char-standing-area{position:relative;width:100%;height:55vh;background:radial-gradient(ellipse at 50% 80%,rgba(74,0,0,0.15),transparent 60%);}
+  .char-standing-area img{height:100%;max-width:100%;object-fit:contain;}
+  .char-glitch-lines{width:100%;height:55vh;}
+  .char-info-area{margin-left:0;width:100%;padding:20px 16px 40px;}
+  .token-circle{width:72px;height:72px;}
+  .gacha-name{font-size:26px;letter-spacing:5px;}
+  .karma-display{width:220px;height:120px;}
+  .karma-value{font-size:28px;}
+  .text-box{bottom:5%;left:3%;right:3%;padding:14px 16px;min-height:85px;}
+  .text-box .dialogue{font-size:13.5px;}
+  .character-standing{width:60%;}
+  .quiz-question{font-size:16px;}
+  .quiz-option{font-size:13px;padding:14px 16px;}
+}
+@media(min-width:481px) and (max-width:768px){
+  .char-standing-area{width:50%;}
+  .char-glitch-lines{width:50%;}
+  .char-info-area{margin-left:50%;width:50%;}
+  .character-standing{width:50%;}
+}
+@media(min-width:769px) and (max-width:1024px){
+  .char-standing-area{width:55%;}
+  .char-glitch-lines{width:55%;}
+  .char-info-area{margin-left:55%;width:45%;}
+}
+</style>
+</head>
+<body>
+
+<audio id="bgm" loop preload="auto">
+  <source src="https://github.com/yermigionic-web/zen/raw/refs/heads/main/zen.mp3" type="audio/mpeg">
+</audio>
+
+<!-- Ambient particles -->
+<div id="ambient-particles"></div>
+
+<!-- Fullscreen overlay -->
+<div id="fullscreen-overlay" onclick="closeFullscreen()"><img id="fullscreen-img" src="" alt=""></div>
+
+<!-- Pause overlay -->
+<div id="pause-overlay">
+  <div class="pause-btn" onclick="goToStart()">시작으로 돌아가기</div>
+  <div class="pause-btn" onclick="goToLibrary()">바로 프로필 보기</div>
+  <div class="pause-btn" onclick="closePause()">취소</div>
+</div>
+
+<!-- [1] MAIN -->
+<div id="main-screen" class="screen active scanlines">
+  <div id="drop-circle"></div>
+  <div class="water-surface" id="water-surface"></div>
+  <div id="lotus-container">
+    <div class="lotus">
+      <div class="lotus-petal"></div><div class="lotus-petal"></div><div class="lotus-petal"></div>
+      <div class="lotus-petal"></div><div class="lotus-petal"></div><div class="lotus-petal"></div><div class="lotus-petal"></div>
+    </div>
+    <img src="https://raw.githubusercontent.com/yermigionic-web/zen/refs/heads/main/%EC%A0%A0%EB%A1%9C%EA%B3%A0.png" alt="ZEN" style="max-width:180px;margin-bottom:20px;">
+    <div id="start-btn" onclick="startGame()">추 락</div>
+  </div>
+</div>
+
+<!-- [2] STORY -->
+<div id="story-screen" class="screen scanlines">
+  <div class="pause-icon" onclick="openPause()">⏸</div>
+  <div id="story-content"></div>
+</div>
+
+<!-- [2-END] CHOICE -->
+<div id="choice-screen" class="screen">
+  <div class="choice-title">당신의 주인을 선택하십시오.</div>
+  <div class="choice-btn" onclick="startQuiz()">해탈당하기</div>
+</div>
+
+<!-- [3] QUIZ -->
+<div id="quiz-screen" class="screen">
+  <div class="quiz-progress"><div class="quiz-progress-fill" id="quiz-progress-fill"></div></div>
+  <div class="quiz-qnum" id="quiz-num"></div>
+  <div class="quiz-question" id="quiz-question"></div>
+  <div class="quiz-options" id="quiz-options"></div>
+</div>
+
+<!-- [4] GACHA -->
+<div id="gacha-screen" class="screen">
+  <div class="chakra-pattern" id="chakra1" style="top:5%;left:5%;"></div>
+  <div class="chakra-pattern" id="chakra2" style="bottom:10%;right:5%;"></div>
+  <div class="gacha-name" id="gacha-name"></div>
+  <img class="gacha-standing" id="gacha-standing" src="" alt="">
+</div>
+
+<!-- [4] LIBRARY -->
+<div id="library-screen" class="screen oriental-bg">
+  <div class="music-bar">
+    <div class="music-toggle" id="music-toggle" onclick="toggleMusic()">▶</div>
+    <div class="music-bars-visual" id="music-visual">
+      <div class="music-bar-line" style="--spd:.4s;height:8px"></div>
+      <div class="music-bar-line" style="--spd:.3s;height:14px"></div>
+      <div class="music-bar-line" style="--spd:.5s;height:10px"></div>
+      <div class="music-bar-line" style="--spd:.35s;height:16px"></div>
+      <div class="music-bar-line" style="--spd:.45s;height:6px"></div>
+      <div class="music-bar-line" style="--spd:.38s;height:12px"></div>
+      <div class="music-bar-line" style="--spd:.42s;height:9px"></div>
+    </div>
+    <div class="music-title">NOW PLAYING</div>
+  </div>
+  <div class="library-title">冥 府 圖 鑑</div>
+  <div class="library-sub">더러워진 영혼의 주인께서</div>
+  <div class="library-divider"></div>
+  <div class="token-grid" id="token-grid"></div>
+</div>
+
+<!-- [4] CHARACTER DETAIL -->
+<div id="char-detail-screen" class="screen">
+  <div class="char-close" onclick="closeCharDetail()">✕</div>
+  <div class="char-glitch-lines" id="char-glitch-lines"></div>
+  <div class="char-standing-area"><img id="char-detail-img" src="" alt=""></div>
+  <div class="char-info-area" id="char-info-area"></div>
+</div>
+
+<script>
+/* ====== DATA ====== */
+const CHARS=[
+  {id:'nian',name:'녠',disp:'年',sub:'Nian',standing:'https://raw.githubusercontent.com/yermigionic-web/zen/refs/heads/main/녠전신.png',tok:'年',
+   info:{gender:'여성',age:'약 4,000년',height:'176cm',cls:'악마',style:'방관, 무력 제압',feat:'나무를 신성시하는 중국의 고대 악령. 하지만 생의 미련을 버린 사람에게는 다정한 주인님이 될지도 모른다!',region:'야광삼림夜光森林',regionImg:'https://raw.githubusercontent.com/yermigionic-web/zen/refs/heads/main/territory1.png'}},
+  {id:'kubera',name:'쿠베라',disp:'कुबेर',sub:'Kubera',standing:'https://raw.githubusercontent.com/yermigionic-web/zen/refs/heads/main/쿠베라전신.png',tok:'財',
+   info:{gender:'여성',age:'약 14,000년',height:'182cm',cls:'악신',style:'괄시, 감각 과주입',feat:'무자비한 야차들의 왕. 엄청난 재물을 가졌으나, 딱히 불교템을 사 모으고자 하는 마음은 없다.',region:'야차궁전夜叉宮殿',regionImg:'https://raw.githubusercontent.com/yermigionic-web/zen/refs/heads/main/territory2.png'}},
+  {id:'preta',name:'프레타',disp:'प्रेत',sub:'Preta',standing:'https://raw.githubusercontent.com/yermigionic-web/zen/refs/heads/main/프레타전신.png',tok:'餓',
+   info:{gender:'여성',age:'약 1,800년',height:'170cm',cls:'요괴',style:'욕구 차단, 의존 강요',feat:'아귀로도 불린다. 영원한 허기에 괴로워하고 있지만 온기를 좋아해.',region:'하수미궁下水媚宮',regionImg:'https://raw.githubusercontent.com/yermigionic-web/zen/refs/heads/main/territory3.png'}},
+  {id:'asura',name:'아수라',disp:'असुर',sub:'Asura',standing:'https://raw.githubusercontent.com/yermigionic-web/zen/refs/heads/main/아수라전신.png',tok:'修',
+   info:{gender:'여성',age:'약 9,000년',height:'201cm',cls:'악신',style:'혐오, 구속 고문',feat:'여러 개의 팔로 동시에 여러 가지 일을 할 수 있다. 하지만 인간은 병신들이라고 생각한다.',region:'쇠의 연무장金演武場',regionImg:'https://raw.githubusercontent.com/yermigionic-web/zen/refs/heads/main/territory4.png'}},
+  {id:'gyenang',name:'계낭',disp:'溪囊',sub:'Gyenang',standing:'https://raw.githubusercontent.com/yermigionic-web/zen/refs/heads/main/계낭전신.png',tok:'溪',
+   info:{gender:'여성',age:'약 1,100년',height:'145cm',cls:'요괴',style:'퇴행 유발, 의존 강요',feat:'아기의 형태를 하고 사람을 끌어당겨 죽이는 요괴. 사실은 상대를 아기 취급하는 걸 더 좋아한다. 천 백 살이니까...',region:'놀이터室内游乐场',regionImg:'https://raw.githubusercontent.com/yermigionic-web/zen/refs/heads/main/territory5.png'}},
+  {id:'alyu',name:'알유',disp:'窫窳',sub:'Alyu',standing:'https://raw.githubusercontent.com/yermigionic-web/zen/refs/heads/main/알유전신.png',tok:'窫',
+   info:{gender:'여성',age:'약 400년',height:'181cm',cls:'요괴',style:'추격, 식인',feat:'쫓고 쫓기는 시간을 사랑하는 늑대? 강아지? 쉽게 꼬리를 흔들지만 제대로 길들이기 힘들 듯하다.',region:'폐허도회廢墟都會',regionImg:'https://raw.githubusercontent.com/yermigionic-web/zen/refs/heads/main/territory6.png'}},
+  {id:'ekek',name:'에켁',disp:'Ekek',sub:'Ekek',standing:'https://raw.githubusercontent.com/yermigionic-web/zen/refs/heads/main/에켁전신.png',tok:'E',
+   info:{gender:'여성',age:'약 1,600년',height:'168cm',cls:'요괴',style:'고립, 유희성 고문',feat:'아주 높은 지대에 거주하며 사람의 피를 먹는다. 근데 요즘은 지옥에도 먹을 게 많아서 굳이 찾아다니지 않는 것 같다.',region:'공중정원空中庭園',regionImg:'https://raw.githubusercontent.com/yermigionic-web/zen/refs/heads/main/territory7.png'}},
+  {id:'tikbalang',name:'틱발랑',disp:'Tikbalang',sub:'Tikbalang',standing:'https://raw.githubusercontent.com/yermigionic-web/zen/refs/heads/main/틱발랑전신.png',tok:'T',
+   info:{gender:'여성',age:'약 750년',height:'272cm',cls:'요괴',style:'구속, 심리적 파손',feat:'혼자 산 지 너무 오래되어 언어능력이 떨어진다. 팔다리도 길고 손도 길고 발도 긴 것이 특징. 꼬리가 예민할 것 같지만... 뼈라서 아무 감각이 없다.',region:'불도죽不逃竹',regionImg:'https://raw.githubusercontent.com/yermigionic-web/zen/refs/heads/main/territory8.png'}}
+];
+
+const QUIZ=[
+  {q:'꿈꾸는 주인님의 성격은?',opts:[
+    {t:'압도적으로 지배하는 타입',c:{nian:1,kubera:1,asura:1}},
+    {t:'친근하면서도 소름끼치는 타입',c:{preta:1,gyenang:1,alyu:1}},
+    {t:'인간이 이해 불가능한 타입',c:{ekek:1,tikbalang:1}}]},
+  {q:'주인님과 단둘이 산다면 어디에?',opts:[
+    {t:'호화롭고 고급스러운 집',c:{kubera:1,asura:1,gyenang:1}},
+    {t:'자연을 느낄 수 있는 숲속',c:{nian:1,ekek:1,alyu:1}},
+    {t:'질척질척하고 어두운 곳에서……♡',c:{preta:1,tikbalang:1}}]},
+  {q:'나의 죄는 어느 부분이 가장 무거운가?',opts:[
+    {t:'물욕',c:{kubera:1,asura:1,gyenang:1}},
+    {t:'파괴욕',c:{nian:1,alyu:1}},
+    {t:'색욕',c:{ekek:1,preta:1,tikbalang:1}}]},
+  {q:'지옥에서의 어려움을 견뎌내는 방식은?',opts:[
+    {t:'너무 아파서 견디지 못하겠다',c:{nian:1,asura:1,gyenang:1}},
+    {t:'ㅆㅂ 내가 해내고 만다',c:{ekek:1,alyu:1}},
+    {t:'몸으로 갚을게요♡',c:{kubera:1,preta:1,tikbalang:1}}]},
+  {q:'가장 좋아하는 음료수는?',opts:[
+    {t:'녹차나 홍차',c:{nian:1,asura:1,ekek:1,tikbalang:1}},
+    {t:'술♡',c:{kubera:1,alyu:1}},
+    {t:'초코 우유… 딸기 우유…',c:{preta:1,gyenang:1}}]},
+  {q:'선호하는 호칭은?',opts:[
+    {t:'내 본명',c:{tikbalang:1,kubera:1}},
+    {t:'작은 것, 반려 등 애칭',c:{gyenang:1,alyu:1,preta:1}},
+    {t:'벌레, 미물 등 멸칭',c:{nian:1,asura:1,ekek:1}}]},
+  {q:'선호하는 인외의 기준은?',opts:[
+    {t:'동물귀, 꼬리, 날개 정도면 괜찮아',c:{gyenang:1,alyu:1,ekek:1}},
+    {t:'피부색까지는 달라도 인간이라는 느낌이 남아있으면 해',c:{nian:1,kubera:1,asura:1}},
+    {t:'누가 봐도 인간 아니네!! 싶어야 인외다',c:{preta:1,tikbalang:1}}]},
+  {q:'주인님이 나보다',opts:[
+    {t:'키가 작았으면 좋겠어',c:{gyenang:1}},
+    {t:'조금 컸으면 좋겠어',c:{nian:1,preta:1,alyu:1,ekek:1}},
+    {t:'존나 컸으면 좋겠어',c:{kubera:1,asura:1,tikbalang:1}}]},
+  {q:'죄 지은 자는',special:true,opts:[
+    {t:'그냥 살아도 된다',c:{},fake:true},
+    {t:'혼자 회개하면 된다',c:{},fake:true},
+    {t:'고문당해야 한다',c:{nian:1,kubera:1,asura:1,preta:1,gyenang:1,ekek:1,alyu:1,tikbalang:1},forced:true}]},
+  {q:'나의 지옥은',opts:[
+    {t:'황금 새장',c:{kubera:1,asura:1,ekek:1}},
+    {t:'녹색 늪',c:{nian:1,preta:1,tikbalang:1}},
+    {t:'동화와 환상',c:{gyenang:1,alyu:1}}]}
+];
+
+const DAY1_INTRO=[
+  {sp:'에켁',tx:'시체. 정신이 들어?'},
+  {sp:'에켁',tx:'잘 잤어? 여기가 어딘지 알아?'},
+  {sp:'에켁',tx:'발밑을 봐. 여긴 지옥이야. 좀 더 정확히 말하면, 네가 갈 지옥의 대기실이지.'},
+  {sp:'에켁',tx:'놀랐어? 그럼 죄를 짓지 말았어야지. 하지만 걱정 마.'},
+  {sp:'에켁',tx:'13일만 버티면 돼. 그 후엔 좋은 주인을 만나 환생의 굴레에서 벗어날 수 있을 테니까.'},
+  {sp:'에켁',tx:'아, 마침 네 업의 무게가 계산됐네. 한 번 볼래?'}
+];
+const DAY1_KARMA=[
+  {sp:'',tx:'……반복된 삶의 업보가 측정되었습니다.'},
+  {sp:'',tx:'이 업보가 모두 소모되면, 당신은 해탈할 기회를 얻습니다.'},
+  {sp:'',tx:'13일간의 훈육이 시작됩니다.'}
+];
+const DAY14_TX=['13일이 지났습니다.','당신의 업보는 모두 소진되었습니다.','이제, 주인을 선택할 시간.'];
+
+/* ====== STATE ====== */
+let musicOn=false,paused=false,scores={},curQ=0,sTO=null,q9T=null;
+
+/* ====== UTIL ====== */
+function showScr(id){document.querySelectorAll('.screen').forEach(s=>s.classList.remove('active'));document.getElementById(id).classList.add('active');}
+function sl(ms){return new Promise(r=>{sTO=setTimeout(r,ms);});}
+function waitTap(elId,ms){return new Promise(r=>{let done=false;const el=document.getElementById(elId);const h=()=>{if(!done){done=true;el&&el.removeEventListener('click',h);r();}};el&&el.addEventListener('click',h);sTO=setTimeout(()=>{if(!done){done=true;el&&el.removeEventListener('click',h);r();}},ms);});}
+
+/* ====== AMBIENT PARTICLES ====== */
+(function(){const c=document.getElementById('ambient-particles');for(let i=0;i<15;i++){const p=document.createElement('div');p.className='ambient-particle';p.style.cssText=`left:${Math.random()*100}%;--dur:${6+Math.random()*8}s;--del:${Math.random()*6}s;bottom:-10px;`;c.appendChild(p);}})();
+
+/* ====== [1] MAIN ANIM - REDESIGNED ====== */
+function initMain(){
+  const d=document.getElementById('drop-circle');
+  const l=document.getElementById('lotus-container');
+  const w=document.getElementById('water-surface');
+  
+  // Ball drops to 20% from top
+  d.style.animation='dropBall 1.8s ease-in forwards';
+  
+  setTimeout(()=>{
+    d.style.display='none';
+    
+    // Red ripples at impact point (20% from top)
+    for(let i=0;i<5;i++){
+      setTimeout(()=>{
+        const r=document.createElement('div');
+        r.className='ripple-ring';
+        r.style.cssText=`
+          left:50%;top:80%;
+          width:30px;height:15px;
+          transform:translate(-50%,-50%) scale(0);
+          animation:rippleRed ${1.8+i*.4}s ease-out forwards;
+          border-color:rgba(220,20,60,${.5-i*.08});
+          box-shadow:0 0 ${6+i*2}px rgba(220,20,60,${.2-i*.03});
+        `;
+        w.parentElement.appendChild(r);
+      },i*180);
+    }
+    
+    // Lotus + logo + button fade in at center
+    setTimeout(()=>{
+      l.style.opacity='1';
+      l.style.animation='fadeInCenter 2s ease-out forwards';
+    },900);
+  },1800);
+}
+setTimeout(initMain,300);
+
+/* ====== START ====== */
+function startGame(){
+  document.getElementById('bgm').play().catch(()=>{});musicOn=true;
+  document.getElementById('music-toggle').textContent='⏸';
+  showScr('story-screen');runStory();
+}
+
+/* ====== PAUSE ====== */
+function openPause(){paused=true;if(sTO)clearTimeout(sTO);document.getElementById('pause-overlay').classList.add('active');}
+function closePause(){paused=false;document.getElementById('pause-overlay').classList.remove('active');}
+function goToStart(){closePause();if(sTO)clearTimeout(sTO);showScr('main-screen');}
+function goToLibrary(){closePause();if(sTO)clearTimeout(sTO);buildLib();showScr('library-screen');}
+
+/* ====== CALENDAR ====== */
+async function showCal(from,to){
+  const ov=document.createElement('div');ov.className='calendar-overlay';ov.id='cal-tmp';
+  if(from){
+    ov.innerHTML=`<div class="calendar-page" id="cal-old">${from}日</div>`;
+    document.body.appendChild(ov);
+    const o=document.getElementById('cal-old');o.style.animation='calendarDrop 1s ease-in forwards';
+    await sl(800);o.remove();
+  } else { document.body.appendChild(ov); }
+  const np=document.createElement('div');np.className='calendar-page';np.style.animation='fadeInUp .8s ease-out';
+  np.innerHTML=to+'日';ov.appendChild(np);
+  await sl(1500);ov.style.transition='opacity .5s';ov.style.opacity='0';await sl(500);ov.remove();
+}
+
+/* ====== [2] STORY ====== */
+function makeTextBoxHTML(spId, dlId, tbId) {
+  return `<div class="text-box" id="${tbId}">
+    <div class="text-box-corner tl"></div><div class="text-box-corner tr"></div>
+    <div class="text-box-corner bl"></div><div class="text-box-corner br"></div>
+    <div class="speaker" id="${spId}"></div>
+    <div class="dialogue" id="${dlId}"></div>
+    <div class="tap-ind">▼</div>
+  </div>`;
+}
+
+async function runStory(){
+  const ct=document.getElementById('story-content');
+
+  // DAY 1
+  await showCal(null,'第一');
+
+  ct.innerHTML=`
+    <div class="story-bg" style="background: linear-gradient(135deg, rgba(26,10,10,0.8), rgba(10,10,26,0.8)), url(https://raw.githubusercontent.com/yermigionic-web/zen/refs/heads/main/사이트배경1.png); background-size: cover; background-position: center;"></div>
+    <img class="character-standing" id="d1char" src="https://raw.githubusercontent.com/yermigionic-web/zen/refs/heads/main/에켁전신.png" alt="에켁">
+    ${makeTextBoxHTML('d1sp','d1dl','d1tb')}`;
+
+  for(let i=0;i<DAY1_INTRO.length;i++){
+    if(paused)return;
+    document.getElementById('d1sp').textContent=DAY1_INTRO[i].sp;
+    document.getElementById('d1dl').textContent=DAY1_INTRO[i].tx;
+    await waitTap('d1tb',4000);
+  }
+
+  // KARMA
+  const ch=document.getElementById('d1char');if(ch)ch.style.opacity='0';
+  const bg=ct.querySelector('.story-bg');if(bg)bg.style.background='linear-gradient(180deg,#0a0a0a,#4a0000)';
+  const kd=document.createElement('div');kd.style.cssText='position:absolute;top:28%;left:50%;transform:translateX(-50%);z-index:15;';
+  kd.innerHTML=`<div class="karma-display"><div class="karma-corner tl"></div><div class="karma-corner tr"></div><div class="karma-corner bl"></div><div class="karma-corner br"></div><div class="karma-label">KARMA</div><div><span class="karma-value" id="kv">333333</span><span class="karma-unit">근</span></div></div>`;
+  ct.appendChild(kd);
+
+  for(let i=0;i<DAY1_KARMA.length;i++){
+    if(paused)return;
+    document.getElementById('d1sp').textContent=DAY1_KARMA[i].sp;
+    document.getElementById('d1dl').textContent=DAY1_KARMA[i].tx;
+    await waitTap('d1tb',4000);
+  }
+
+  // DAY 2-13
+  await showCal('第一','第二');
+  
+  const repoBaseUrl = "https://raw.githubusercontent.com/yermigionic-web/zen/refs/heads/main/";
+  const bgImages = Array.from({ length: 8 }, (_, i) => `${repoBaseUrl}site${i + 1}.png`);
+  const glitchImages = Array.from({ length: 8 }, (_, i) => `${repoBaseUrl}siteglitch${i + 1}.png`);
+
+  let kv = 333333;
+  const step = Math.floor(333333 / 8);
+
+  for (let c = 0; c < 8; c++) {
+    if (paused) return;
+
+    ct.innerHTML = `
+      <div class="story-bg" style="
+        background-image: url('${bgImages[c]}'); 
+        background-size: cover; 
+        background-position: center;"></div>
+      <div class="flicker-overlay glitch-filter" style="
+        background-image: url('${glitchImages[c]}'); 
+        background-size: cover; 
+        background-position: center;"></div>
+      <div class="pause-icon" onclick="openPause()">⏸</div>`;
+    await sl(6000); 
+    if (paused) return;
+
+    kv=Math.max(0,kv-step);if(c===7)kv=0;
+    ct.innerHTML=`<div style="position:absolute;top:0;left:0;right:0;bottom:0;background:radial-gradient(circle at 50% 40%,rgba(74,0,0,0.3),#0a0a0a 70%);display:flex;justify-content:center;align-items:center;">
+      <div class="karma-display"><div class="karma-corner tl"></div><div class="karma-corner tr"></div><div class="karma-corner bl"></div><div class="karma-corner br"></div>
+      <div class="karma-label">KARMA</div><div><span class="karma-value">${kv}</span><span class="karma-unit">근</span></div></div></div>
+      <div class="pause-icon" onclick="openPause()">⏸</div>`;
+    await sl(2000);
+  }
+
+  // DAY 14
+  await showCal('第十三','第十四');
+  ct.innerHTML=`
+    <div class="story-bg marbling-bg"></div>
+    <img class="character-standing" style="width:50%;left:25%;right:25%;object-position:center bottom;" src="https://raw.githubusercontent.com/yermigionic-web/zen/refs/heads/main/userstanding.png" alt="">
+    <div class="top-text-box" id="d14tb"><div class="dialogue" id="d14dl"></div></div>
+    <div class="pause-icon" onclick="openPause()">⏸</div>`;
+
+  for(let i=0;i<DAY14_TX.length;i++){
+    if(paused)return;
+    document.getElementById('d14dl').textContent=DAY14_TX[i];
+    await waitTap('d14tb',3500);
+  }
+  showScr('choice-screen');
+}
+
+/* ====== [3] QUIZ ====== */
+function startQuiz(){
+  scores={nyeon:0,kubera:0,preta:0,asura:0,gyenang:0,alyu:0,ekek:0,tikbalang:0};
+  curQ=0;showScr('quiz-screen');renderQ();
+}
+
+function renderQ(){
+  const d=QUIZ[curQ];
+  document.getElementById('quiz-progress-fill').style.width=((curQ)/QUIZ.length*100)+'%';
+  document.getElementById('quiz-num').textContent=`Q${curQ+1} / ${QUIZ.length}`;
+  document.getElementById('quiz-question').textContent=d.q;
+  document.getElementById('quiz-question').style.opacity='1';
+  document.getElementById('quiz-num').style.opacity='1';
+  const oc=document.getElementById('quiz-options');oc.innerHTML='';
+
+  d.opts.forEach((o,i)=>{
+    const b=document.createElement('div');b.className='quiz-option';b.textContent=o.t;b.dataset.idx=i;
+    b.addEventListener('click',()=>{
+      if(b.classList.contains('vanished'))return;
+      if(o.fake){b.classList.add('glitch-out');setTimeout(()=>b.classList.add('vanished'),500);return;}
+      selectOpt(i,b);
+    });
+    oc.appendChild(b);
+  });
+
+  if(d.special){
+    q9T=setTimeout(()=>{
+      const opts=oc.querySelectorAll('.quiz-option');
+      d.opts.forEach((o,i)=>{if(o.fake&&opts[i]){opts[i].classList.add('glitch-out');setTimeout(()=>opts[i].classList.add('vanished'),500);}});
+    },1600);
+  }
+}
+
+function selectOpt(idx,el){
+  if(q9T){clearTimeout(q9T);q9T=null;}
+  const d=QUIZ[curQ],o=d.opts[idx];
+  for(let c in o.c)scores[c]=(scores[c]||0)+o.c[c];
+
+  const r=el.getBoundingClientRect(),cx=r.left+r.width/2,cy=r.top+r.height/2;
+  for(let i=0;i<12;i++){
+    const p=document.createElement('div');p.className='petal-particle';
+    const a=(Math.PI*2/12)*i,dist=80+Math.random()*120;
+    p.style.cssText=`left:${cx}px;top:${cy}px;--tx:${Math.cos(a)*dist}px;--ty:${Math.sin(a)*dist}px;--rot:${Math.random()*720}deg;background:${['#DC143C','#8B0000','#FF1744','#FFD700'][~~(Math.random()*4)]};`;
+    document.body.appendChild(p);setTimeout(()=>p.remove(),1300);
+  }
+
+  el.style.animation='shatter .5s ease-out forwards';
+  document.querySelectorAll('#quiz-options .quiz-option').forEach(x=>{if(x!==el&&!x.classList.contains('vanished')){x.style.transition='opacity .5s';x.style.opacity='0';}});
+  document.getElementById('quiz-question').style.transition='opacity .5s';document.getElementById('quiz-question').style.opacity='0';
+  document.getElementById('quiz-num').style.transition='opacity .5s';document.getElementById('quiz-num').style.opacity='0';
+
+  setTimeout(()=>{curQ++;if(curQ>=QUIZ.length)showGacha();else renderQ();},700);
+}
+
+/* ====== [4] GACHA ====== */
+function showGacha(){
+  let mx='nyeon',ms=0;for(let c in scores)if(scores[c]>ms){ms=scores[c];mx=c;}
+  const ch=CHARS.find(c=>c.id===mx);
+  showScr('gacha-screen');
+  const scr=document.getElementById('gacha-screen');
+  scr.style.background='radial-gradient(circle,#1a0000 0%,#0a0a0a 60%,#000 100%)';
+
+  // Clean up any previous scan lines
+  scr.querySelectorAll('.gacha-scanline,.gacha-vline').forEach(e=>e.remove());
+
+  // Spawn horizontal green scan lines
+  for(let i=0;i<6;i++){
+    const line=document.createElement('div');
+    line.className='gacha-scanline';
+    const startY=Math.random()*100;
+    const dist=-200-Math.random()*400;
+    line.style.cssText=`top:${startY}%;--spd:${1.5+Math.random()*2}s;--del:${0.3+i*0.4}s;--dist:${dist}px;`;
+    scr.appendChild(line);
+  }
+
+  // Spawn vertical green accent lines
+  for(let i=0;i<4;i++){
+    const vl=document.createElement('div');
+    vl.className='gacha-vline';
+    const h=30+Math.random()*40;
+    vl.style.cssText=`left:${10+Math.random()*80}%;top:${10+Math.random()*40}%;--spd:${1.2+Math.random()*1.5}s;--del:${0.5+i*0.5}s;--h:${h}vh;`;
+    scr.appendChild(vl);
+  }
+
+  // Name slides in from right
+  const nm=document.getElementById('gacha-name');nm.textContent=ch.name;
+  nm.style.cssText='top:20%;left:50%;transform:translateX(100vw);opacity:0;';
+  nm.style.animation='slideFromRight 1.5s ease-out forwards';
+
+  // Standing slides from left to CENTER (not stuck at left)
+  setTimeout(()=>{
+    const st=document.getElementById('gacha-standing');st.src=ch.standing;
+    st.style.cssText='opacity:0;left:50%;transform:translateX(-150%);';
+    st.style.transition='transform 1.2s ease-out, opacity 0.8s ease-out';
+    requestAnimationFrame(()=>{
+      st.style.opacity='1';
+      st.style.transform='translateX(-50%)';
+    });
+  },1000);
+
+  // Chakra bloom
+  setTimeout(()=>{
+    document.getElementById('chakra1').style.animation='chakraBloom 2s ease-out forwards';
+    document.getElementById('chakra2').style.animation='chakraBloom 2s ease-out .3s forwards';
+  },1800);
+
+  // Second wave of scan lines for extra drama
+  setTimeout(()=>{
+    for(let i=0;i<4;i++){
+      const line=document.createElement('div');
+      line.className='gacha-scanline';
+      const startY=Math.random()*100;
+      const dist=-150-Math.random()*300;
+      line.style.cssText=`top:${startY}%;--spd:${1+Math.random()*1.5}s;--del:${i*0.3}s;--dist:${dist}px;`;
+      scr.appendChild(line);
+    }
+  },2500);
+
+  setTimeout(()=>openCharDet(ch.id),4500);
+}
+
+/* ====== LIBRARY ====== */
+function buildLib(){
+  const g = document.getElementById('token-grid');
+  g.innerHTML = '';
+  const tokenBaseUrl = "https://raw.githubusercontent.com/yermigionic-web/zen/refs/heads/main/";
+
+  CHARS.forEach((ch, index) => {
+    const c = document.createElement('div');
+    c.className = 'token-cell';
+    c.onclick = () => openCharDet(ch.id);
+    
+    const tokenImgUrl = `${tokenBaseUrl}token${index + 1}.png`;
+
+    c.innerHTML = `
+      <div class="token-name">${ch.disp}</div>
+      <div class="token-circle">
+        <img src="${tokenImgUrl}" alt="${ch.name}" style="
+          width:100%;height:100%;object-fit:cover;border-radius:50%;position:relative;z-index:2;">
+      </div>
+      <div class="token-name-sub">${ch.sub}</div>`;
+    
+    g.appendChild(c);
+  });
+}
+
+/* ====== CHAR DETAIL ====== */
+function openCharDet(id){
+  const ch=CHARS.find(c=>c.id===id);if(!ch)return;
+  showScr('char-detail-screen');
+  document.getElementById('char-detail-img').src=ch.standing;
+
+  const gl=document.getElementById('char-glitch-lines');gl.innerHTML='';
+  for(let i=0;i<8;i++){const l=document.createElement('div');l.className='glitch-line';l.style.cssText=`top:${Math.random()*100}%;--spd:${2+Math.random()*4}s;opacity:${.05+Math.random()*.12};`;gl.appendChild(l);}
+
+  const ia=document.getElementById('char-info-area');
+  ia.innerHTML=`
+    <div class="char-info-box"><h3>${ch.disp}</h3><div class="info-label">NAME</div><div class="info-value">${ch.name} / ${ch.sub}</div></div>
+    <div class="char-info-box">
+      <div class="info-label">GENDER</div><div class="info-value">${ch.info.gender}</div>
+      <div class="info-label">AGE</div><div class="info-value">${ch.info.age}</div>
+      <div class="info-label">HEIGHT</div><div class="info-value">${ch.info.height}</div>
+      <div class="info-label">CLASS</div><div class="info-value">${ch.info.cls}</div>
+      <div class="info-label">STYLE</div><div class="info-value">${ch.info.style}</div>
+    </div>
+    <div class="char-info-box"><div class="info-label">FEATURES</div><div class="info-value">${ch.info.feat}</div></div>
+    <div class="char-info-box"><div class="info-label">TERRITORY</div><div class="info-value">${ch.info.region}</div>
+      ${ch.info.regionImg?`<img class="region-thumb" src="${ch.info.regionImg}" alt="거주지역" onclick="event.stopPropagation();openFS('${ch.info.regionImg}')">`:
+      `<div style="width:100%;height:120px;background:linear-gradient(135deg,#1a0000,#0a0a0a);border:1px dashed rgba(139,0,0,.3);display:flex;justify-content:center;align-items:center;color:rgba(245,230,211,.3);font-size:12px;margin-top:8px;">이미지 미등록</div>`}
+    </div>`;
+}
+function closeCharDetail(){buildLib();showScr('library-screen');}
+
+/* ====== FULLSCREEN ====== */
+function openFS(s){document.getElementById('fullscreen-img').src=s;document.getElementById('fullscreen-overlay').classList.add('active');}
+function closeFullscreen(){document.getElementById('fullscreen-overlay').classList.remove('active');}
+
+/* ====== MUSIC ====== */
+function toggleMusic(){
+  const b=document.getElementById('bgm'),t=document.getElementById('music-toggle'),bars=document.querySelectorAll('.music-bar-line');
+  if(musicOn){b.pause();musicOn=false;t.textContent='▶';bars.forEach(b=>b.style.animationPlayState='paused');}
+  else{b.play().catch(()=>{});musicOn=true;t.textContent='⏸';bars.forEach(b=>b.style.animationPlayState='running');}
+}
+
+buildLib();
+</script>
+</body>
+</html>
